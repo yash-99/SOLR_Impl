@@ -1,0 +1,27 @@
+<dataConfig>
+  <dataSource name="db" type="JdbcDataSource"
+    driver="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+	url="jdbc:<url>;databaseName=AppAssemblyDB_PrimeDB" user="sa" password="In@123"/>
+  <dataSource name="blobStream" type="FieldStreamDataSource"/>
+  <document>
+    <entity name="attachments" 
+      query= "select * from Map_File where Map_Ext not like  '%zip' and Map_Ext not like '%mp4' order by Map_DTS desc;"
+	  deltaImportQuery= "select * from Map_File where Map_Ext not like  '%zip' and Map_Ext not like '%mp4' order by Map_DTS desc;"
+	  deltaQuery="select Map_File_ID from Map_File where Map_DTS > '${dataimporter.last_index_time}'"
+      dataSource="db" >
+      <field column="Map_File_ID" name="id"/>
+    	<entity 
+        name="attachment" 
+        dataSource="blobStream"
+        processor="TikaEntityProcessor"
+        url="map_doc"
+        dataField="attachments.Map_Doc"
+        format="text"
+		extractEmbedded="true">
+      
+      </entity>
+	  
+	<field column="Map_Ext" name="ext" />
+    </entity>
+  </document>
+</dataConfig>
